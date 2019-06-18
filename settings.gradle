@@ -1,0 +1,4 @@
+include ':example'
+include ':plugin'
+include ':example:core_network_api'
+include ':example:core_network_impl'

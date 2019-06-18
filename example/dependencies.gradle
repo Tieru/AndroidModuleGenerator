@@ -1,0 +1,45 @@
+ext.commonGroup = { dependencyHandler ->
+    delegate = dependencyHandler
+
+    implementation fileTree(include: ['*.jar', '*.aar'], dir: 'libs')
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation "androidx.appcompat:appcompat:${versions.appcompat}"
+    testImplementation "junit:junit:${versions.junit}"
+    androidTestImplementation "androidx.test:runner:${versions.runner}"
+    androidTestImplementation "androidx.test.espresso:espresso-core:${versions.espresso}"
+    implementation "com.google.dagger:dagger:${versions.dagger}"
+    implementation "ru.terrakok.cicerone:cicerone:${versions.cicerone}"
+}
+
+ext.rxBindingGroup = { dependencyHandler ->
+    delegate = dependencyHandler
+
+    implementation deps.rxBinding
+    implementation deps.rxBindingCore
+    implementation deps.rxBindingAppcompat
+}
+
+ext.rxJavaGroup = { dependencyHandler ->
+    delegate = dependencyHandler
+
+    implementation deps.rxJava
+    implementation deps.rxAndroid
+}
+
+
+ext.deps = [
+        dagger : "com.google.dagger:dagger-compiler:${versions.dagger}",
+        rxJava : "io.reactivex.rxjava2:rxjava:${versions.rxJava}",
+        rxAndroid : "io.reactivex.rxjava2:rxandroid:${versions.rxAndroid}",
+        rxBinding : "com.jakewharton.rxbinding3:rxbinding:${versions.rxBinding}",
+        rxBindingCore : "com.jakewharton.rxbinding3:rxbinding-core:${versions.rxBinding}",
+        rxBindingMaterial : "com.jakewharton.rxbinding3:rxbinding-material:${versions.rxBinding}",
+        rxBindingAppcompat : "com.jakewharton.rxbinding3:rxbinding-appcompat:${versions.rxBinding}",
+        constraint : "androidx.constraintlayout:constraintlayout:${versions.constraint}",
+        material : "com.google.android.material:material:${versions.material}"
+]
+
+ext.mods = [
+//        network_api : project(':core_network_api'),
+//        network_impl : project(':core_network_impl'),
+]
