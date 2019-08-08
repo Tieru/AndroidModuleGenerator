@@ -3,14 +3,20 @@ package ru.vtb.android.plugin.modules.generator
 import org.gradle.api.Project
 import java.io.File
 
-class SettingsGenerator {
+data class SettingsConfig(
+    val project: Project,
+    val moduleName: String
+)
 
-    fun addModuleToSettings(project: Project, moduleName: String) {
-        val settingsFilePath = "${project.rootProject.projectDir}/settings.gradle"
+class SettingsGenerator(private val config: SettingsConfig) : SimpleGenerator {
+
+    override fun generate() {
+        val settingsFilePath = "${config.project.rootProject.projectDir}/settings.gradle"
         val settingsFile = File(settingsFilePath)
         assert(settingsFile.exists())
 
-        val moduleIncludeText = "include '$moduleName'"
+        val modulePath = makeFullModulePath()
+        val moduleIncludeText = "include '$modulePath'"
 
         val textLines = settingsFile.readLines()
         val endOfIncludesBlock = findEndOfIncludeBlock(textLines)
@@ -18,6 +24,10 @@ class SettingsGenerator {
         val newText = textLines.toMutableList()
         newText.add(endOfIncludesBlock, moduleIncludeText)
         settingsFile.writeText(newText.joinToString(separator = "\n"))
+    }
+
+    private fun makeFullModulePath(): String {
+        return config.project.path + ":" + config.moduleName
     }
 
     private fun findEndOfIncludeBlock(settingsFileLines: List<String>): Int {

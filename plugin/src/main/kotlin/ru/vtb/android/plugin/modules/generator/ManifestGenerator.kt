@@ -1,28 +1,29 @@
 package ru.vtb.android.plugin.modules.generator
 
+import ru.vtb.android.plugin.modules.utils.makeFileWithContent
 import java.io.File
 
-class ManifestGenerator {
+data class ManifestConfig(
+    val srcMainDir: String,
+    val modulePackage: String
+)
 
-    fun generate(templatesDir: String, manifestPath: String, modulePackage: String) {
-        val template = loadTemplate(templatesDir)
-        val manifest = formatManifest(template, modulePackage)
-        writeManifest(manifest, manifestPath)
+class ManifestGenerator(val config: ManifestConfig): SimpleGenerator {
+
+    override fun generate() {
+        val content = makeManifestContent()
+        writeManifest(content)
     }
 
-    private fun loadTemplate(templatesDir: String): String {
-        val templatePath = "$templatesDir/manifest-template.xml"
-        return File(templatePath).readLines().joinToString(separator = "\n")
+    private fun makeManifestContent(): String {
+        return """
+<manifest
+    package="${config.modulePackage}"/>
+        """.trimIndent()
     }
 
-    private fun formatManifest(template: String, moduleName: String): String {
-        return template.format(moduleName)
-    }
-
-    private fun writeManifest(manifest: String, manifestPath: String) {
-        val file = File(manifestPath)
-        file.createNewFile()
-        println("Writing manifest: $manifestPath")
-        file.writeText(manifest)
+    private fun writeManifest(manifest: String) {
+        val file = File("${config.srcMainDir}/AndroidManifest.xml")
+        file.makeFileWithContent(manifest)
     }
 }
