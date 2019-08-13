@@ -1,0 +1,34 @@
+naming:
+  appPackage: "ru.vtb.smb"
+  omitWordsInPackage:
+    - "feature"
+  moduleNameDelimiter: "_"
+  modulePackageDelimiter: "."
+apiModule:
+  postfix: "api"
+  addPostfixToPackageName: false
+  addManifest: true
+  buildGradleTemplate: "tools/module-templates/build-template.gradle"
+  di:
+    enabled: true
+    addFeatureStarter: true
+  presentation:
+    addFeatureStarter: true
+    featureStarterPackage: "presentation"
+    featureStarterBaseScreen: "ru.terrakok.cicerone.android.support.SupportAppScreen"
+implModule:
+  postfix: "impl"
+  addPostfixToPackageName: false
+  addManifest: true
+  buildGradleTemplate: "tools/module-templates/impl-build-template.gradle"
+  di:
+    enabled: true
+    componentScopeAnnotationClass: "ru.vtb.smb.core.PerFeature"
+  presentation:
+    enabled: true
+    addFeatureStarter: true
+    addViewModel: true
+  ui:
+    enabled: true
+    baseFragmentClass: "ru.vtb.smb.core.BaseFragment"
+    injectViewModel: true

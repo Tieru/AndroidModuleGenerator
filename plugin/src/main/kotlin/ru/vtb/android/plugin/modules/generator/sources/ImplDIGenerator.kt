@@ -1,127 +1,156 @@
 package ru.vtb.android.plugin.modules.generator.sources
 
-import ru.vtb.android.plugin.modules.entity.ModuleConfig
+import com.squareup.kotlinpoet.*
+import ru.vtb.android.plugin.modules.entity.ModuleNameModifier
+import ru.vtb.android.plugin.modules.entity.buildClassNameAround
 import ru.vtb.android.plugin.modules.generator.SimpleGenerator
-import ru.vtb.android.plugin.modules.utils.toCamelCase
+import ru.vtb.android.plugin.modules.utils.retrievePackageAndClassName
 import java.io.File
 
-class ImplDIGenerator: SimpleGenerator {
+
+data class ImplDiConfig(
+    val moduleSourcesDir: File,
+    val modulePackage: String,
+    val featureName: String,
+    val featureNameModifiers: List<ModuleNameModifier>,
+    val apiDiPackage: String,
+    val addViewModel: Boolean,
+    val featureStarterPackage: String?,
+    val scopeClass: String?
+)
+
+class ImplDiGenerator(private val config: ImplDiConfig) : SimpleGenerator {
 
     private companion object {
         const val diDir = "di"
     }
 
-    override fun generate(config: ModuleConfig) {
-        val className = makeClassName(config.name)
+    private val diPackage = config.modulePackage + "." + diDir
+    private val featureModuleClassName =
+        config.featureNameModifiers.buildClassNameAround(config.featureName, "Module")
+    private val screenModuleClassName = config.featureName + "ScreenModule"
+    private val featureComponentClassName =
+        config.featureNameModifiers.buildClassNameAround(config.featureName, "Component")
 
-        makeDir(config.sourceConfig.classPath + "/$diDir")
-        writeFeatureComponent(className, config.sourceConfig.modulePackage, config.sourceConfig.classPath)
-        writeFeatureModule(className, config.sourceConfig.modulePackage, config.sourceConfig.classPath)
-        writeScreenComponent(className, config.sourceConfig.modulePackage, config.sourceConfig.classPath)
+    private val scopeClass = config.scopeClass?.retrievePackageAndClassName()
+
+    override fun generate() {
+        makeFeatureComponent()
+        makeFeatureModule()
+        makeScreenComponent()
     }
 
-    private fun makeClassName(moduleName: String): String {
-        val isFeature = moduleName.contains("feature")
-        val subjectName = moduleName.toCamelCase()
-            .replace("Feature", "")
-            .replace("Impl", "")
+    private fun makeFeatureComponent() {
+        val file = FileSpec.builder(diPackage, featureComponentClassName)
+            .addImport("dagger", "Component")
 
-        return if (isFeature) {
-            "${subjectName}Feature"
-        } else {
-            subjectName
+        val apiComponentClassName = config.featureNameModifiers.buildClassNameAround(config.featureName, "Api")
+        val featureDependenciesClassName =
+            config.featureNameModifiers.buildClassNameAround(config.featureName, "Dependencies")
+        if (diPackage != config.apiDiPackage) {
+            file.addImport(config.apiDiPackage, apiComponentClassName, featureDependenciesClassName)
         }
-    }
 
-    private fun writeFeatureComponent(className: String, pkg: String, classPath: String) {
-        val component = makeFeatureComponentClass(pkg, className)
-        println("Generating 'Impl' Feature Component: $classPath/$diDir/${className}Component.kt")
-        writeClass("$classPath/$diDir", className + "Component", component)
-    }
+        val classBuilder = TypeSpec.classBuilder(featureComponentClassName)
+            .addSuperinterface(ClassName(config.apiDiPackage, apiComponentClassName))
+            .addAnnotation(
+                AnnotationSpec.builder(ClassName("dagger", "Component"))
+                    .addMember("modules = [$featureModuleClassName::class]")
+                    .addMember("dependencies = [$featureDependenciesClassName::class]")
+                    .build()
+            )
+            .addModifiers(KModifier.ABSTRACT)
 
-    private fun makeFeatureComponentClass(pkg: String, className: String): String {
-        val apiInterface = className + "Api"
-        return """
-            package $pkg.$diDir
-
-            import dagger.Component
-            import ru.vtb.smb.core.PerFeature
-            import $pkg.$apiInterface
-
-            @Component
-            @PerFeature
-            abstract class ${className}Component : $apiInterface {
-
-            }
-        """.trimIndent()
-    }
-
-    private fun writeFeatureModule(className: String, pkg: String, classPath: String) {
-        val component = makeFeatureModuleClass(pkg, className)
-        println("Generating 'Impl' Feature Module: $classPath/$diDir/${className}Module.kt")
-        writeClass("$classPath/$diDir", className + "Module", component)
-    }
-
-    private fun makeFeatureModuleClass(pkg: String, className: String): String {
-        val subjectName = className.replace("Feature", "")
-        return """
-            package $pkg.$diDir
-
-            import dagger.Module
-            import dagger.Provides
-            import ru.vtb.smb.core.PerScreen
-            import $pkg.presentation.${subjectName}ViewModel
-
-            @Module
-            class ${className}Module {
-
-            }
-
-            @Module
-            class ${subjectName}ScreenModule {
-                @PerScreen
-                @Provides
-                fun get${subjectName}ViewModel(): ${subjectName}ViewModel {
-                    return ${subjectName}ViewModel(resultCallback)
-                }
-            }
-        """.trimIndent()
-    }
-
-    private fun writeScreenComponent(className: String, pkg: String, classPath: String) {
-        val component = makeScreenComponentClass(pkg, className)
-        println("Generating 'Impl' Screen Component: $classPath/$diDir/${className}ScreenComponent.kt")
-        writeClass("$classPath/$diDir", className + "ScreenComponent", component)
-    }
-
-    private fun makeScreenComponentClass(pkg: String, className: String): String {
-        val subjectName = className.replace("Feature", "")
-        return """
-            package $pkg.$diDir
-
-            import dagger.Subcomponent
-            import ru.vtb.smb.core.PerScreen
-            import $pkg.ui.EnterCodeFragment
-
-            @Subcomponent(modules = [${subjectName}ScreenModule::class])
-            @PerScreen
-            interface ${subjectName}ScreenComponent {
-
-            }
-        """.trimIndent()
-    }
-
-    private fun makeDir(path: String) {
-        val dir = File(path)
-        if (dir.exists()) {
-            return
+        scopeClass?.let { scope ->
+            file.addImport(scope.first, scope.second)
+            classBuilder.addAnnotation(ClassName(scope.first, scope.second))
         }
-        dir.mkdirs()
+
+        file.addType(classBuilder.build())
+        file.build().writeTo(config.moduleSourcesDir)
     }
 
-    private fun writeClass(classPath: String, fileName: String, content: String) {
-        val file = File("$classPath/$fileName.kt")
-        file.createNewFile()
-        file.writeText(content)
+    private fun makeFeatureModule() {
+        val file = FileSpec.builder(diPackage, featureModuleClassName)
+            .addImport("dagger", "Module")
+
+        val viewModelPackage = config.modulePackage + ".presentation"
+        val viewModelClass = config.featureName + "ViewModel"
+
+        val featureStarterPackage = config.featureStarterPackage
+        val featureStarterClass = config.featureNameModifiers.buildClassNameAround(config.featureName, "Starter")
+
+        if (config.addViewModel || featureStarterPackage != null) {
+            file.addImport("dagger", "Provides")
+        }
+
+        if (featureStarterPackage != null) {
+            file.addImport(featureStarterPackage, featureStarterClass, featureStarterClass + "Impl")
+        }
+
+        if (config.addViewModel) {
+            file.addImport(viewModelPackage, viewModelClass)
+        }
+
+        scopeClass?.let { file.addImport(it.first, it.second) }
+
+        val featureModule = TypeSpec.classBuilder(featureModuleClassName)
+            .addAnnotation(ClassName("dagger", "Module"))
+
+        if (featureStarterPackage != null) {
+            val featureStarterFunction = FunSpec.builder("provideFeatureStarter")
+                .addAnnotation(ClassName("dagger", "Provides"))
+                .returns(ClassName(featureStarterPackage, featureStarterClass))
+                .addStatement("return ${featureStarterClass}Impl()")
+
+            scopeClass?.let { scope ->
+                featureStarterFunction.addAnnotation(ClassName(scope.first, scope.second))
+            }
+
+            featureModule.addFunction(featureStarterFunction.build())
+        }
+
+        val screenModule = TypeSpec.classBuilder(screenModuleClassName)
+            .addAnnotation(ClassName("dagger", "Module"))
+
+        if (config.addViewModel) {
+            val viewModelFunction = FunSpec.builder("provideViewModel")
+                .addAnnotation(ClassName("dagger", "Provides"))
+                .returns(ClassName(viewModelPackage, viewModelClass))
+                .addStatement("return $viewModelClass()")
+
+            scopeClass?.let { scope ->
+                viewModelFunction.addAnnotation(ClassName(scope.first, scope.second))
+            }
+
+            screenModule.addFunction(viewModelFunction.build())
+        }
+
+        file.addType(featureModule.build())
+            .addType(screenModule.build())
+
+
+        file.build().writeTo(config.moduleSourcesDir)
+    }
+
+    private fun makeScreenComponent() {
+        val screenComponentClassName = config.featureName + "ScreenComponent"
+        val file = FileSpec.builder(diPackage, screenComponentClassName)
+            .addImport("dagger", "Subcomponent")
+
+        val componentBuilder = TypeSpec.interfaceBuilder(screenComponentClassName)
+            .addAnnotation(
+                AnnotationSpec.builder(ClassName("dagger", "Subcomponent"))
+                    .addMember("modules = [$screenModuleClassName::class]")
+                    .build()
+            )
+
+        scopeClass?.let { scope ->
+            file.addImport(scope.first, scope.second)
+            componentBuilder.addAnnotation(ClassName(scope.first, scope.second))
+        }
+
+        file.addType(componentBuilder.build())
+        file.build().writeTo(config.moduleSourcesDir)
     }
 }
