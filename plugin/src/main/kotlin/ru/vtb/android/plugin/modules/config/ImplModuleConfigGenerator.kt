@@ -74,6 +74,15 @@ class ImplModuleConfigGenerator(
                 options.di.screenScopeAnnotationClass
             )
             generators.add(ImplDiGenerator(config))
+
+            val implDiComponentGeneratorConfig = ImplDiFeatureComponentConfig(
+                sourcesConfig.moduleClassesDir,
+                sourcesConfig.modulePackage,
+                sourcesConfig.cleanFeatureNameCamelCase, sourcesConfig.featureNameModifiers,
+                apiSourcesConfig.modulePackage + ".di",
+                options.di.featureScopeAnnotationClass
+            )
+            generators.add(ImplDiComponentGenerator(implDiComponentGeneratorConfig))
         }
 
         options.buildGradleTemplate?.let { templatePath ->

@@ -40,15 +40,7 @@ class ApiDiGenerator(private val config: ApiDiConfig) : SimpleGenerator {
         }
 
         file.addType(featureApiBuilder.build())
-        file.addType(makeDependenciesInterface())
-
         file.build().writeTo(config.diDir)
     }
 
-    private fun makeDependenciesInterface(): TypeSpec {
-        val featureDependenciesClassName =
-            config.featureNameModifiers.buildClassNameAround(config.featureName, "Dependencies")
-
-        return TypeSpec.interfaceBuilder(featureDependenciesClassName).build()
-    }
 }

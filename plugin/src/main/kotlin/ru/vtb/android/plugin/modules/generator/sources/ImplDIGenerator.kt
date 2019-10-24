@@ -30,46 +30,13 @@ class ImplDiGenerator(private val config: ImplDiConfig) : SimpleGenerator {
     private val featureModuleClassName =
         config.featureNameModifiers.buildClassNameAround(config.featureName, "Module")
     private val screenModuleClassName = config.featureName + "ScreenModule"
-    private val featureComponentClassName =
-        config.featureNameModifiers.buildClassNameAround(config.featureName, "Component")
 
     private val featureScopeClass = config.featureScopeClass?.retrievePackageAndClassName()
     private val screenScopeClass = config.screenScopeClass?.retrievePackageAndClassName()
 
     override fun generate() {
-        makeFeatureComponent()
         makeFeatureModule()
         makeScreenComponent()
-    }
-
-    private fun makeFeatureComponent() {
-        val file = FileSpec.builder(diPackage, featureComponentClassName)
-            .addImport("dagger", "Component")
-
-        val apiComponentClassName = config.featureNameModifiers.buildClassNameAround(config.featureName, "Api")
-        val featureDependenciesClassName =
-            config.featureNameModifiers.buildClassNameAround(config.featureName, "Dependencies")
-        if (diPackage != config.apiDiPackage) {
-            file.addImport(config.apiDiPackage, apiComponentClassName, featureDependenciesClassName)
-        }
-
-        val classBuilder = TypeSpec.classBuilder(featureComponentClassName)
-            .addSuperinterface(ClassName(config.apiDiPackage, apiComponentClassName))
-            .addAnnotation(
-                AnnotationSpec.builder(ClassName("dagger", "Component"))
-                    .addMember("modules = [$featureModuleClassName::class]")
-                    .addMember("dependencies = [$featureDependenciesClassName::class]")
-                    .build()
-            )
-            .addModifiers(KModifier.ABSTRACT)
-
-        featureScopeClass?.let { scope ->
-            file.addImport(scope.first, scope.second)
-            classBuilder.addAnnotation(ClassName(scope.first, scope.second))
-        }
-
-        file.addType(classBuilder.build())
-        file.build().writeTo(config.moduleSourcesDir)
     }
 
     private fun makeFeatureModule() {
