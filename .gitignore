@@ -7,3 +7,5 @@
 */build
 /captures
 .externalNativeBuild
+/example/feature_create_payment_impl
+/example/feature_create_payment_api
