@@ -27,7 +27,9 @@ class ApiModuleConfigGenerator(
         generators.add(BasicModuleStructureGenerator(moduleStructureConfig))
 
         if (options.addManifest) {
-            val manifestConfig = ManifestConfig(sourcesConfig.moduleSrcMainDir.path, sourcesConfig.modulePackage)
+            val manifestConfig = ManifestConfig(sourcesConfig.moduleSrcMainDir.path,
+                sourcesConfig.modulePackage,
+                ".api")
             generators.add(ManifestGenerator(manifestConfig))
         }
 

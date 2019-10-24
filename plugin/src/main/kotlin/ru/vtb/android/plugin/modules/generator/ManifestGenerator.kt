@@ -5,7 +5,8 @@ import java.io.File
 
 data class ManifestConfig(
     val srcMainDir: String,
-    val modulePackage: String
+    val modulePackage: String,
+    val packagePostfix: String? = null
 )
 
 class ManifestGenerator(val config: ManifestConfig): SimpleGenerator {
@@ -16,9 +17,10 @@ class ManifestGenerator(val config: ManifestConfig): SimpleGenerator {
     }
 
     private fun makeManifestContent(): String {
+        val fullPackage = config.modulePackage + config.packagePostfix
         return """
 <manifest
-    package="${config.modulePackage}"/>
+    package="$fullPackage"/>
         """.trimIndent()
     }
 
