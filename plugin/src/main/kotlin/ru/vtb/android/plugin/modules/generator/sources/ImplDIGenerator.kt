@@ -16,7 +16,8 @@ data class ImplDiConfig(
     val apiDiPackage: String,
     val addViewModel: Boolean,
     val featureStarterPackage: String?,
-    val scopeClass: String?
+    val featureScopeClass: String?,
+    val screenScopeClass: String?
 )
 
 class ImplDiGenerator(private val config: ImplDiConfig) : SimpleGenerator {
@@ -32,7 +33,8 @@ class ImplDiGenerator(private val config: ImplDiConfig) : SimpleGenerator {
     private val featureComponentClassName =
         config.featureNameModifiers.buildClassNameAround(config.featureName, "Component")
 
-    private val scopeClass = config.scopeClass?.retrievePackageAndClassName()
+    private val featureScopeClass = config.featureScopeClass?.retrievePackageAndClassName()
+    private val screenScopeClass = config.screenScopeClass?.retrievePackageAndClassName()
 
     override fun generate() {
         makeFeatureComponent()
@@ -61,7 +63,7 @@ class ImplDiGenerator(private val config: ImplDiConfig) : SimpleGenerator {
             )
             .addModifiers(KModifier.ABSTRACT)
 
-        scopeClass?.let { scope ->
+        featureScopeClass?.let { scope ->
             file.addImport(scope.first, scope.second)
             classBuilder.addAnnotation(ClassName(scope.first, scope.second))
         }
@@ -92,7 +94,7 @@ class ImplDiGenerator(private val config: ImplDiConfig) : SimpleGenerator {
             file.addImport(viewModelPackage, viewModelClass)
         }
 
-        scopeClass?.let { file.addImport(it.first, it.second) }
+        featureScopeClass?.let { file.addImport(it.first, it.second) }
 
         val featureModule = TypeSpec.classBuilder(featureModuleClassName)
             .addAnnotation(ClassName("dagger", "Module"))
@@ -103,7 +105,7 @@ class ImplDiGenerator(private val config: ImplDiConfig) : SimpleGenerator {
                 .returns(ClassName(featureStarterPackage, featureStarterClass))
                 .addStatement("return ${featureStarterClass}Impl()")
 
-            scopeClass?.let { scope ->
+            featureScopeClass?.let { scope ->
                 featureStarterFunction.addAnnotation(ClassName(scope.first, scope.second))
             }
 
@@ -119,7 +121,7 @@ class ImplDiGenerator(private val config: ImplDiConfig) : SimpleGenerator {
                 .returns(ClassName(viewModelPackage, viewModelClass))
                 .addStatement("return $viewModelClass()")
 
-            scopeClass?.let { scope ->
+            screenScopeClass?.let { scope ->
                 viewModelFunction.addAnnotation(ClassName(scope.first, scope.second))
             }
 
@@ -145,7 +147,7 @@ class ImplDiGenerator(private val config: ImplDiConfig) : SimpleGenerator {
                     .build()
             )
 
-        scopeClass?.let { scope ->
+        screenScopeClass?.let { scope ->
             file.addImport(scope.first, scope.second)
             componentBuilder.addAnnotation(ClassName(scope.first, scope.second))
         }

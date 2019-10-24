@@ -70,7 +70,8 @@ class ImplModuleConfigGenerator(
                 apiSourcesConfig.modulePackage + ".di",
                 options.presentation.addViewModel,
                 featureStarter,
-                options.di.componentScopeAnnotationClass
+                options.di.featureScopeAnnotationClass,
+                options.di.screenScopeAnnotationClass
             )
             generators.add(ImplDiGenerator(config))
         }

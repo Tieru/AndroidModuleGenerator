@@ -26,7 +26,8 @@ data class ImplModuleOptions(
 
 data class ImplModuleDiOptions(
     val enabled: Boolean,
-    val componentScopeAnnotationClass: String? = null
+    val featureScopeAnnotationClass: String? = null,
+    val screenScopeAnnotationClass: String? = null
 )
 
 data class ImplModulePresentationOptions(

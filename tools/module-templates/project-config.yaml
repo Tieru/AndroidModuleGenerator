@@ -23,7 +23,8 @@ implModule:
   buildGradleTemplate: "tools/module-templates/impl-build-template.gradle"
   di:
     enabled: true
-    componentScopeAnnotationClass: "ru.vtb.smb.core.PerFeature"
+    featureScopeAnnotationClass: "ru.vtb.smb.core.PerFeature"
+    screenScopeAnnotationClass: "ru.vtb.smb.core.PerScreen"
   presentation:
     enabled: true
     addFeatureStarter: true
