@@ -64,6 +64,10 @@ class ApiModuleConfigGenerator(
             generators.add(BuildFileGenerator(config))
         }
 
+        if (options.addGitIgnore) {
+            generators.add(GitIgnoreGenerator(sourcesConfig.moduleDir.path))
+        }
+
         val settingsConfig = SettingsConfig(project, sourcesConfig.moduleName)
         generators.add(SettingsGenerator(settingsConfig))
 

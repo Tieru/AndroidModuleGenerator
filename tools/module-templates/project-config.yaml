@@ -8,6 +8,7 @@ apiModule:
   postfix: "api"
   addPostfixToPackageName: false
   addManifest: true
+  addGitIgnore: true
   buildGradleTemplate: "tools/module-templates/build-template.gradle"
   di:
     enabled: true
@@ -20,6 +21,7 @@ implModule:
   postfix: "impl"
   addPostfixToPackageName: false
   addManifest: true
+  addGitIgnore: true
   buildGradleTemplate: "tools/module-templates/impl-build-template.gradle"
   di:
     enabled: true

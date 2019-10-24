@@ -109,6 +109,10 @@ class ImplModuleConfigGenerator(
             generators.add(ImplUiGenerator(uiConfig))
         }
 
+        if (options.addGitIgnore) {
+            generators.add(GitIgnoreGenerator(sourcesConfig.moduleDir.path))
+        }
+
         val resourcesConfig = ResourcesConfig(sourcesConfig.moduleSrcMainDir.path, moduleName)
         generators.add(ResourcesGenerator(resourcesConfig))
 

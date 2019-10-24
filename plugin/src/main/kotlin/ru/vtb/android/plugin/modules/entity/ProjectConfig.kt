@@ -18,6 +18,7 @@ data class ImplModuleOptions(
     val postfix: String? = "impl",
     val addPostfixToPackageName: Boolean = true,
     val addManifest: Boolean,
+    val addGitIgnore: Boolean = true,
     val buildGradleTemplate: String? = "tools/module-templates/build-template.gradle",
     val di: ImplModuleDiOptions,
     val presentation: ImplModulePresentationOptions,
@@ -47,6 +48,7 @@ data class ApiModuleOptions(
     val postfix: String? = "api",
     val addPostfixToPackageName: Boolean = true,
     val addManifest: Boolean = true,
+    val addGitIgnore: Boolean = true,
     val buildGradleTemplate: String? = "tools/module-templates/build-template.gradle",
     val di: ApiModuleDiOptions = ApiModuleDiOptions(),
     val presentation: ApiModulePresentationOptions = ApiModulePresentationOptions()
