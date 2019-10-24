@@ -106,6 +106,9 @@ class ImplModuleConfigGenerator(
             generators.add(ImplUiGenerator(uiConfig))
         }
 
+        val resourcesConfig = ResourcesConfig(sourcesConfig.moduleSrcMainDir.path, moduleName)
+        generators.add(ResourcesGenerator(resourcesConfig))
+
         val settingsConfig = SettingsConfig(project, sourcesConfig.moduleName)
         generators.add(SettingsGenerator(settingsConfig))
 
