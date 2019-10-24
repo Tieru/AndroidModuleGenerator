@@ -25,7 +25,7 @@ class ResourcesGenerator(private val config: ResourcesConfig) : SimpleGenerator 
             </LinearLayout>
         """.trimIndent()
 
-        val filename = "fragment_" + featureNameToFragmentFileName(config.moduleName)
+        val filename = featureNameToFragmentFileName(config.moduleName)
         val file = File("${config.srcMainDir}/res/layout/$filename.xml")
         file.makeFileWithContent(content)
     }
@@ -42,18 +42,20 @@ class ResourcesGenerator(private val config: ResourcesConfig) : SimpleGenerator 
         file.makeFileWithContent(content)
     }
 
-    private fun featureNameToFragmentFileName(featureName: String): String {
-        val name = if (featureName.contains("feature")) {
-            val featureNameStartIndex = featureName.indexOf("feature")
-            if (featureNameStartIndex > 0) {
-                featureName.substring(0, featureNameStartIndex - 1) + featureName.substring(featureNameStartIndex + 8, featureName.length)
+    companion object {
+        fun featureNameToFragmentFileName(featureName: String): String {
+            val name = if (featureName.contains("feature")) {
+                val featureNameStartIndex = featureName.indexOf("feature")
+                if (featureNameStartIndex > 0) {
+                    featureName.substring(0, featureNameStartIndex - 1) + featureName.substring(featureNameStartIndex + 8, featureName.length)
+                } else {
+                    featureName.substring(featureNameStartIndex + 8, featureName.length)
+                }
             } else {
-                featureName.substring(featureNameStartIndex + 8, featureName.length)
+                featureName
             }
-        } else {
-            featureName
-        }
 
-        return name.replace("-", "_")
+            return "fragment_" + name.replace("-", "_")
+        }
     }
 }

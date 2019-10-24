@@ -17,7 +17,7 @@ class ManifestGenerator(val config: ManifestConfig): SimpleGenerator {
     }
 
     private fun makeManifestContent(): String {
-        val fullPackage = config.modulePackage + config.packagePostfix
+        val fullPackage = config.modulePackage + (config.packagePostfix ?: "")
         return """
 <manifest
     package="$fullPackage"/>

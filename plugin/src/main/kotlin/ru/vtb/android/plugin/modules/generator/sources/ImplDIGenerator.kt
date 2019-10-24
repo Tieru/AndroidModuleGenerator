@@ -17,7 +17,8 @@ data class ImplDiConfig(
     val addViewModel: Boolean,
     val featureStarterPackage: String?,
     val featureScopeClass: String?,
-    val screenScopeClass: String?
+    val screenScopeClass: String?,
+    val addFragmentInjectMethod: Boolean
 )
 
 class ImplDiGenerator(private val config: ImplDiConfig) : SimpleGenerator {
@@ -113,6 +114,21 @@ class ImplDiGenerator(private val config: ImplDiConfig) : SimpleGenerator {
                     .addMember("modules = [$screenModuleClassName::class]")
                     .build()
             )
+
+        if (config.addFragmentInjectMethod) {
+            val uiPackage = config.modulePackage + ".ui"
+            val fragmentClass = config.featureName + "Fragment"
+
+            file.addImport(uiPackage, fragmentClass)
+
+            componentBuilder.addFunction(
+                FunSpec.builder("inject").addParameter(
+                    ParameterSpec.builder("fragment", ClassName(uiPackage, fragmentClass))
+                        .build())
+                    .addModifiers(KModifier.ABSTRACT)
+                    .build()
+            )
+        }
 
         screenScopeClass?.let { scope ->
             file.addImport(scope.first, scope.second)

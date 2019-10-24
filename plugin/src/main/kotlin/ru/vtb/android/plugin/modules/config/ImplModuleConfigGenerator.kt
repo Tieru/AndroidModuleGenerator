@@ -71,7 +71,8 @@ class ImplModuleConfigGenerator(
                 options.presentation.addViewModel,
                 featureStarter,
                 options.di.featureScopeAnnotationClass,
-                options.di.screenScopeAnnotationClass
+                options.di.screenScopeAnnotationClass,
+                options.ui.enabled
             )
             generators.add(ImplDiGenerator(config))
 
@@ -99,7 +100,9 @@ class ImplModuleConfigGenerator(
             val uiConfig = UiConfig(
                 sourcesConfig.moduleClassesDir,
                 sourcesConfig.modulePackage,
+                moduleName,
                 sourcesConfig.cleanFeatureNameCamelCase,
+                sourcesConfig.featureNameModifiers,
                 baseFragment,
                 options.ui.injectViewModel
             )
